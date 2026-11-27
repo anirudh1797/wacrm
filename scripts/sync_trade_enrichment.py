@@ -135,8 +135,19 @@ def main():
             s.setdefault("_extra_datasets", set()).add(l["dataset"])
     uniq = list(seen.values())
 
-    existing = paged("contacts", "id,phone", extra="&phone=like.NA-*")
-    cid = {c["phone"]: c["id"] for c in existing}
+    # Dedupe anchor: the lead_id custom field (company_id from trade schema).
+    # Phone used to be the anchor ("NA-<company_id>") but enrichment now
+    # overwrites phone with real numbers, so phone can no longer be trusted.
+    f = req("GET", "custom_fields?field_name=eq.lead_id&select=id")
+    FIELD_ID = f[0]["id"] if f else None
+    cid = {}          # "NA-<company_id>" -> contact uuid
+    if FIELD_ID:
+        for v in paged("contact_custom_values", "contact_id,value",
+                       extra=f"&custom_field_id=eq.{FIELD_ID}"):
+            cid[f"NA-{v['value']}"] = v["contact_id"]
+    else:  # legacy fallback: placeholder phones
+        for c in paged("contacts", "id,phone", extra="&phone=like.NA-*"):
+            cid[c["phone"]] = c["id"]
     new_leads = [l for l in uniq if f"NA-{l['company_id']}" not in cid]
 
     if new_leads:
@@ -146,6 +157,12 @@ def main():
             for c in req("POST", "contacts?select=id,phone", rows[i:i+500],
                          prefer="return=representation"):
                 cid[c["phone"]] = c["id"]
+        if FIELD_ID:
+            vals = [{"contact_id": cid[f"NA-{l['company_id']}"],
+                     "custom_field_id": FIELD_ID, "value": str(l["company_id"])}
+                    for l in new_leads]
+            for i in range(0, len(vals), 1000):
+                req("POST", "contact_custom_values", vals[i:i+1000])
     print(f"contacts: {len(uniq)} leads, {len(new_leads)} new inserted")
 
     # ---- 2. tags ---------------------------------------------------------
