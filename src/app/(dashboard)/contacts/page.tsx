@@ -81,8 +81,9 @@ export default function ContactsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
-  // Tag filter — contacts shown must have ANY of these tags (OR).
+  // Tag filter — grouped: AND across tag groups (ct:/ds:/st:/role), OR within.
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [tagFilterSearch, setTagFilterSearch] = useState('');
 
   // Modals
   const [formOpen, setFormOpen] = useState(false);
@@ -456,7 +457,18 @@ export default function ContactsPage() {
                 </p>
               ) : (
                 <div className="max-h-64 overflow-y-auto py-1">
-                  {allTags.map((tag) => (
+                  <div className="sticky top-0 z-10 bg-popover px-3 pb-1.5 pt-1">
+                    <Input
+                      value={tagFilterSearch}
+                      onChange={(e) => setTagFilterSearch(e.target.value)}
+                      placeholder={t('searchTags')}
+                      className="h-8 text-sm"
+                      aria-label={t('searchTags')}
+                    />
+                  </div>
+                  {allTags.filter((tag) =>
+                    tag.name.toLowerCase().includes(tagFilterSearch.trim().toLowerCase())
+                  ).map((tag) => (
                     <label
                       key={tag.id}
                       className="flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-muted/50"

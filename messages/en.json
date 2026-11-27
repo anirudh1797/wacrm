@@ -577,7 +577,8 @@
       "toastBulkDeleted": "{count} contacts deleted",
       "filterByTag": "Filter by {name}",
       "removeTagFilter": "Remove {name} filter",
-      "selectContact": "Select {name}"
+      "selectContact": "Select {name}",
+      "searchTags": "Search tags…"
     },
     "form": {
       "addTitle": "Add Contact",
