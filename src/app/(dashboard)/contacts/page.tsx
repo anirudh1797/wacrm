@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import type { Contact, Tag, ContactTag } from '@/types';
@@ -70,6 +72,7 @@ interface ContactWithTags extends Contact {
 }
 
 export default function ContactsPage() {
+  const router = useRouter();
   const t = useTranslations('Contacts.page');
   const tGate = useTranslations('GatedButton');
   const supabase = createClient();
@@ -622,7 +625,7 @@ export default function ContactsPage() {
                 <TableRow
                   key={contact.id}
                   className="border-border hover:bg-muted/50 cursor-pointer"
-                  onClick={() => openDetail(contact.id)}
+                  onClick={() => router.push(`/contacts/${encodeURIComponent(contact.id)}`)}
                 >
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <Checkbox
@@ -632,7 +635,9 @@ export default function ContactsPage() {
                     />
                   </TableCell>
                   <TableCell className="text-foreground font-medium">
-                    {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    <Link href={`/contacts/${encodeURIComponent(contact.id)}`} className="hover:underline" onClick={(e) => e.stopPropagation()}>
+                      {contact.name || <span className="text-muted-foreground italic">{t('unnamed')}</span>}
+                    </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground font-mono text-xs">
                     {contact.phone}
@@ -693,6 +698,11 @@ export default function ContactsPage() {
                         align="end"
                         className="bg-popover border-border"
                       >
+                        <DropdownMenuItem
+                          onClick={(e) => { e.stopPropagation(); openDetail(contact.id); }}
+                        >
+                          Quick details
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();

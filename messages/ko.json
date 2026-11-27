@@ -577,7 +577,8 @@
       "toastBulkDeleted": "연락처 {count}개가 삭제되었습니다",
       "filterByTag": "{name}(으)로 필터링",
       "removeTagFilter": "{name} 필터 제거",
-      "selectContact": "{name} 선택"
+      "selectContact": "{name} 선택",
+      "searchTags": "태그 검색…"
     },
     "form": {
       "addTitle": "연락처 추가",
